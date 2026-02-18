@@ -5,6 +5,8 @@
 /.pnp
 .pnp.js
 .env
+schema.sql
+docker-compose.yml
 # testing
 /coverage
 
