@@ -36,6 +36,9 @@ export default class Campaign {
   @Column()
   is_deleted: boolean;
 
+  @Column("char")
+  traversal_attribute: string;
+
   @Column("datetime")
   @CreateDateColumn()
   created_at: Date;
