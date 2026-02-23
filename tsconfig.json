@@ -9,8 +9,8 @@
     "allowJs": true,
 
     /* Language and Environment */
-    "experimentalDecorators": true,                   /* Enable experimental support for TC39 stage 2 draft decorators. */
-    "emitDecoratorMetadata": true,                    /* Emit design-type metadata for decorated declarations in source files. */
+    "experimentalDecorators": true /* Enable experimental support for TC39 stage 2 draft decorators. */,
+    "emitDecoratorMetadata": true /* Emit design-type metadata for decorated declarations in source files. */,
 
     // Bundler mode
     "moduleResolution": "bundler",

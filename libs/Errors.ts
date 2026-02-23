@@ -6,20 +6,20 @@
  * It provides a standard structure for error messages and HTTP status codes.
  */
 export class AppError extends Error {
-    /**
-     * @property {number} status - The HTTP status code associated with the error.
-     */
-    status: number;
+  /**
+   * @property {number} status - The HTTP status code associated with the error.
+   */
+  status: number;
 
-    /**
-     * Creates an instance of AppError.
-     * @param {string} message - A descriptive error message.
-     * @param {number} status - The HTTP status code for the error.
-     */
-    constructor(message: string, status: number) {
-        super(message);
-        this.status = status;
-    }
+  /**
+   * Creates an instance of AppError.
+   * @param {string} message - A descriptive error message.
+   * @param {number} status - The HTTP status code for the error.
+   */
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
 }
 
 /**
@@ -30,13 +30,13 @@ export class AppError extends Error {
  * e.g., missing required parameters, invalid data format, etc.
  */
 export class BadRequestException extends AppError {
-    /**
-     * Creates an instance of BadRequestException.
-     * @param {string} message - A descriptive error message for the bad request.
-     */
-    constructor(message: string) {
-        super(message, 400); // Sets the HTTP status code to 400
-    }
+  /**
+   * Creates an instance of BadRequestException.
+   * @param {string} message - A descriptive error message for the bad request.
+   */
+  constructor(message: string) {
+    super(message, 400); // Sets the HTTP status code to 400
+  }
 }
 
 /**
@@ -47,13 +47,13 @@ export class BadRequestException extends AppError {
  * does not exist on the server.
  */
 export class ResourceNotFoundException extends AppError {
-    /**
-     * Creates an instance of ResourceNotFoundException.
-     * @param {string} message - A descriptive error message indicating the resource was not found.
-     */
-    constructor(message: string) {
-        super(message, 404); // Sets the HTTP status code to 404
-    }
+  /**
+   * Creates an instance of ResourceNotFoundException.
+   * @param {string} message - A descriptive error message indicating the resource was not found.
+   */
+  constructor(message: string) {
+    super(message, 404); // Sets the HTTP status code to 404
+  }
 }
 
 /**
@@ -64,11 +64,11 @@ export class ResourceNotFoundException extends AppError {
  * for the target resource.
  */
 export class UnAuthorizedAccessException extends AppError {
-    /**
-     * Creates an instance of UnAuthorizedAccessException.
-     * @param {string} message - A descriptive error message for the unauthorized access attempt.
-     */
-    constructor(message: string) {
-        super(message, 401); // Sets the HTTP status code to 401
-    }
+  /**
+   * Creates an instance of UnAuthorizedAccessException.
+   * @param {string} message - A descriptive error message for the unauthorized access attempt.
+   */
+  constructor(message: string) {
+    super(message, 401); // Sets the HTTP status code to 401
+  }
 }
