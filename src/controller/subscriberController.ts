@@ -15,6 +15,8 @@ import {
   DeleteMultipleSubscribersDTO,
   DeleteSubscribersByQueryDTO,
 } from "../dto/subcriber";
+import AdminAuth from "../middleware/admin_auth";
+import { CreateSubscriber } from "../services/subscriberService";
 
 export const SubscriberController = (app: AppInstance) => {
   app.group("/subscribers", (app) =>
@@ -35,10 +37,17 @@ export const SubscriberController = (app: AppInstance) => {
         detail: { tags: ["Subscriber"], description: "Retrieve a subscriber bounce records" },
         body: SubscriberBounceRecordsDTO,
       })
-      .post("", async () => {}, {
-        detail: { tags: ["Subscriber"], description: "Create a new subscriber" },
-        body: CreateSubscriberDTO,
-      })
+      .post(
+        "",
+        async ({ body }) => {
+          return await CreateSubscriber(body);
+        },
+        {
+          detail: { tags: ["Subscriber"], description: "Create a new subscriber" },
+          beforeHandle: AdminAuth,
+          body: CreateSubscriberDTO,
+        },
+      )
       .post("/:subscriber_id/optin", async () => {}, {
         detail: {
           tags: ["Subscriber"],
