@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import Campaign from "./Campaign";
-import Subscriber from "./Subcriber";
+import Subscriber from "./Subscriber";
 
 @Entity("delivery_logs")
 export default class DeliveryLog {
@@ -30,6 +30,12 @@ export default class DeliveryLog {
   @Column()
   is_deleted: boolean;
 
+  @Column("char")
+  campaign_id: string;
+
+  @Column("char")
+  subscriber_id: string;
+
   @Column("datetime")
   @CreateDateColumn()
   created_at: Date;
@@ -41,11 +47,11 @@ export default class DeliveryLog {
   @Column("datetime")
   deleted_at: Date;
 
-  @ManyToOne(() => Campaign)
+  @ManyToOne(() => Campaign, { lazy: true })
   @JoinColumn({ name: "campaign_id", referencedColumnName: "id" })
-  campaign: Campaign;
+  campaign: Promise<Campaign>;
 
-  @ManyToOne(() => Subscriber)
+  @ManyToOne(() => Subscriber, { lazy: true })
   @JoinColumn({ name: "subscriber_id", referencedColumnName: "id" })
-  subscriber: Subscriber;
+  subscriber: Promise<Subscriber>;
 }

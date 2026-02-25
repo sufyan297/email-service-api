@@ -3,7 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
@@ -14,6 +14,12 @@ import Campaign from "./Campaign";
 export default class CampaignList {
   @PrimaryGeneratedColumn("uuid")
   id: string;
+
+  @Column("char")
+  campaign_id: string;
+
+  @Column("char")
+  list_id: string;
 
   @Column()
   is_active: boolean;
@@ -32,11 +38,11 @@ export default class CampaignList {
   @Column("datetime")
   deleted_at: Date;
 
-  @ManyToMany(() => List)
+  @ManyToOne(() => List, { lazy: true })
   @JoinColumn({ name: "list_id", referencedColumnName: "id" })
-  list: List[];
+  list: Promise<List>;
 
-  @ManyToMany(() => Campaign)
+  @ManyToOne(() => Campaign, { lazy: true })
   @JoinColumn({ name: "campaign_id", referencedColumnName: "id" })
-  campaign: Campaign[];
+  campaign: Promise<Campaign>;
 }

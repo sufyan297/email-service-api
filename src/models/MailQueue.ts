@@ -8,21 +8,27 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import Campaign from "./Campaign";
-import Subscriber from "./Subcriber";
+import Subscriber from "./Subscriber";
 
 @Entity("mail_queue")
 export default class MailQueue {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({ type: "json" })
+  @Column("json")
   payload?: Record<string, any>;
 
-  @Column({ type: "varchar" })
+  @Column("varchar")
   status: string;
 
-  @Column({ type: "int" })
+  @Column("int")
   tries: number;
+
+  @Column("char")
+  campaign_id: string;
+
+  @Column("char")
+  subscriber_id: string;
 
   @Column()
   is_active: boolean;
@@ -41,11 +47,11 @@ export default class MailQueue {
   @Column("datetime")
   deleted_at: Date;
 
-  @ManyToOne(() => Campaign)
+  @ManyToOne(() => Campaign, { lazy: true })
   @JoinColumn({ name: "campaign_id", referencedColumnName: "id" })
-  campaign: Campaign;
+  campaign: Promise<Campaign>;
 
-  @ManyToOne(() => Subscriber)
+  @ManyToOne(() => Subscriber, { lazy: true })
   @JoinColumn({ name: "subscriber_id", referencedColumnName: "id" })
-  subscriber?: Subscriber;
+  subscriber?: Promise<Subscriber>;
 }

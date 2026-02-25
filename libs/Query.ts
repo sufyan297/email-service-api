@@ -1,8 +1,6 @@
 import {
-  getConnection,
   FindOneOptions,
   FindManyOptions,
-  SaveOptions,
   Not,
   In,
   MoreThan,
@@ -13,10 +11,10 @@ import {
   IsNull,
   Between,
   Raw,
-  ObjectType,
   ObjectLiteral,
 } from "typeorm";
-import { map, trim, upperCase } from "lodash";
+import { map, trim } from "lodash";
+import { AppDataSource } from "./Datasource";
 
 /**
  * Connection Object
@@ -35,10 +33,6 @@ export interface IPaginationResults<T> {
   total: number;
 }
 
-const _getConnection = (connectionName: string = "default") => {
-  return getConnection(connectionName ? connectionName : "default");
-};
-
 export const hasSpace = (str: string): boolean => {
   return /\s/.test(str);
 };
@@ -53,8 +47,7 @@ const _getOne = <T extends ObjectLiteral>(
 ): Promise<T | null> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const connection = _getConnection(connectionName);
-      const repository = connection.getRepository(modelName);
+      const repository = AppDataSource.getRepository(modelName);
       if (options.where) {
         options.where = _getWhere({
           ...options.where,
@@ -87,8 +80,7 @@ const _getMany = <T extends ObjectLiteral>(
 ): Promise<T[]> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const connection = _getConnection(connectionName);
-      const repository = connection.getRepository(modelName);
+      const repository = AppDataSource.getRepository(modelName);
       if (options && options.where) {
         options.where = _getWhere({
           ...options.where,
@@ -122,8 +114,7 @@ const _getCount = <T extends ObjectLiteral>(
   return new Promise(async (resolve, reject) => {
     try {
       if (!modelName) return resolve(0);
-      const connection = _getConnection(connectionName);
-      const repository = connection.getRepository(modelName);
+      const repository = AppDataSource.getRepository(modelName);
       if (options && options.where) {
         let newWhere = options.where;
         if (Array.isArray(options.where)) {
@@ -170,8 +161,7 @@ const _getPagination = <T extends ObjectLiteral>(
       }
       //===================
 
-      const connection = _getConnection(connectionName);
-      const repository = connection.getRepository(modelName);
+      const repository = AppDataSource.getRepository(modelName);
       if (options && options.where) {
         let newWhere = options.where;
         if (Array.isArray(options.where)) {
@@ -216,8 +206,7 @@ const _saveData = <T extends ObjectLiteral>(
 ): Promise<T | T[]> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const connection = _getConnection(connectionName);
-      const repository = connection.getRepository(modelName);
+      const repository = AppDataSource.getRepository(modelName);
       // console.log("Repository: ", repository);
       const data = await repository.save(fields);
       resolve(data);
@@ -321,8 +310,7 @@ const _rawQuery = (query: string, connectionName?: string) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (!query) return resolve(false);
-      const connection = _getConnection(connectionName);
-      const data = await connection.query(query);
+      const data = await AppDataSource.query(query);
       resolve(data);
     } catch (error) {
       reject(error);
@@ -333,8 +321,7 @@ const _rawQuery = (query: string, connectionName?: string) => {
 
 const _bulkInsert = async (model: string, data: any[], connectionName = "default") => {
   try {
-    const connection = _getConnection(connectionName);
-    const repository = connection.getRepository(model);
+    const repository = AppDataSource.getRepository(model);
 
     return await repository.insert(data);
   } catch (error) {

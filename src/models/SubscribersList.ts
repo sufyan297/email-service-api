@@ -2,17 +2,23 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import List from "./List";
-import Subscriber from "./Subcriber";
+import Subscriber from "./Subscriber";
 
 @Entity({ name: "subscriber_lists" })
 export default class SubscriberList {
   @PrimaryGeneratedColumn("uuid")
   id: string;
+
+  @Column("char", { length: 36 })
+  subscriber_id: string;
+
+  @Column("char", { length: 36 })
+  list_id: string;
 
   @Column("varchar")
   is_subscribed: string;
@@ -34,9 +40,9 @@ export default class SubscriberList {
   @Column("datetime")
   deleted_at: Date;
 
-  @ManyToMany(() => List)
-  list: List[];
+  @ManyToOne(() => Subscriber, (subscriber) => subscriber.subscriberLists, { lazy: true })
+  subscriber: Promise<Subscriber>;
 
-  @ManyToMany(() => Subscriber)
-  subscriber: Subscriber[];
+  @ManyToOne(() => List, (list) => list.subscriberLists, { lazy: true })
+  list: Promise<List>;
 }

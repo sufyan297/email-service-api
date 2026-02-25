@@ -2,9 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import SubscriberList from "./SubscribersList";
+import CampaignList from "./CampaignList";
 
 @Entity({ name: "lists" })
 export default class List {
@@ -36,4 +39,10 @@ export default class List {
 
   @Column("datetime")
   deleted_at: Date;
+
+  @OneToMany(() => SubscriberList, (subscriberList) => subscriberList.list)
+  subscriberLists: SubscriberList[];
+
+  @OneToMany(() => CampaignList, (campaignList) => campaignList.list)
+  campaignLists: CampaignList[];
 }

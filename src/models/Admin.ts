@@ -1,40 +1,45 @@
-import { AfterLoad, Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
 
-@Entity({ name: 'admins' })
+@Entity({ name: "admins" })
 export default class Admin {
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-  @Column('varchar')
-  username: string
+  @Column("varchar")
+  username: string;
 
-  @Column('varchar')
-  password: string
+  @Column("varchar")
+  password: string;
 
-  @Column('varchar')
-  first_name: string
+  @Column("varchar")
+  first_name: string;
 
-  @Column('varchar')
-  last_name: string
+  @Column("varchar")
+  last_name: string;
 
-  @Column('varchar')
-  mobile: string
-
-  @Column()
-  is_active: boolean
+  @Column("varchar")
+  mobile: string;
 
   @Column()
-  is_deleted: boolean
+  is_active: boolean;
 
-  @Column('datetime')
+  @Column()
+  is_deleted: boolean;
+
+  @Column("datetime")
   @CreateDateColumn()
-  created_at: Date
+  created_at: Date;
 
-  @Column('datetime')
+  @Column("datetime")
   @UpdateDateColumn()
-  updated_at: Date
+  updated_at: Date;
 
-  @Column('datetime')
-  deleted_at: Date
-
+  @Column("datetime")
+  deleted_at: Date;
 }
