@@ -133,6 +133,7 @@ const DeleteOneSubscriber = async (subscriberId: string): Promise<APIResponse<bo
       id: subscriberId,
       is_active: false,
       is_deleted: true,
+      deleted_at: new Date(),
     });
 
     return {
@@ -154,6 +155,7 @@ const DeleteManySubscriber = async (subscriberIds: string[]): Promise<APIRespons
           id: subscriberId,
           is_active: false,
           is_deleted: true,
+          deleted_at: new Date(),
         });
       }),
     );

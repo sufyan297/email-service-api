@@ -17,16 +17,19 @@ export default class List {
   @Column("varchar")
   name: string;
 
+  @Column("text", { nullable: true })
+  description: string;
+
   @Column("varchar")
   optin_mode: string;
 
   @Column()
   is_private: boolean;
 
-  @Column()
+  @Column({ default: true })
   is_active: boolean;
 
-  @Column()
+  @Column({ default: false })
   is_deleted: boolean;
 
   @Column("datetime")
@@ -37,7 +40,7 @@ export default class List {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @Column("datetime")
+  @Column("datetime", { nullable: true })
   deleted_at: Date;
 
   @OneToMany(() => SubscriberList, (subscriberList) => subscriberList.list)
