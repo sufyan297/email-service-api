@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -11,20 +12,21 @@ import List from "./List";
 import Campaign from "./Campaign";
 
 @Entity({ name: "campaign_lists" })
+@Index(["campaign_id", "list_id"], { unique: true })
 export default class CampaignList {
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
-
-  @Column("char")
-  campaign_id: string;
-
-  @Column("char")
-  list_id: string;
+  @PrimaryGeneratedColumn("increment")
+  id: number;
 
   @Column()
-  is_active: boolean;
+  campaign_id: number;
 
   @Column()
+  list_id: number;
+
+  @Column("text")
+  list_name: string;
+
+  @Column({ default: false })
   is_deleted: boolean;
 
   @Column("datetime")
@@ -34,9 +36,6 @@ export default class CampaignList {
   @Column("datetime")
   @UpdateDateColumn()
   updated_at: Date;
-
-  @Column("datetime")
-  deleted_at: Date;
 
   @ManyToOne(() => List, { lazy: true })
   @JoinColumn({ name: "list_id", referencedColumnName: "id" })

@@ -1,4 +1,7 @@
 import { t } from "elysia";
+import { ListOptin, ListStatus, ListType, Order } from "../types/constants";
+
+const PerPageDTO = t.Union([t.Integer({ minimum: 1 }), t.Literal("all")]);
 
 export const GetManyListsDTO = t.Optional(
   t.Object({
@@ -7,34 +10,43 @@ export const GetManyListsDTO = t.Optional(
         description: "String for list name search",
       }),
     ),
-    is_active: t.Optional(
-      t.Boolean({
+    type: t.Optional(t.Enum(ListType)),
+    optin: t.Optional(t.Enum(ListOptin)),
+    status: t.Optional(
+      t.Enum(ListStatus, {
         description: "Status to filter lists.",
       }),
     ),
+    minimal: t.Optional(
+      t.Boolean({
+        description: "If true, returns lists without subscriber counts",
+      }),
+    ),
+    tag: t.Optional(
+      t.Union([
+        t.String({
+          description: "Tag to filter lists by",
+        }),
+        t.Array(
+          t.String({
+            description: "Tags to filter lists by",
+          }),
+        ),
+      ]),
+    ),
+    tags: t.Optional(t.Array(t.String())),
     order_by: t.Optional(
       t.Enum(
-        {
-          createdAt: "createdAt",
-          updatedAt: "updatedAt",
-          name: "name",
-          status: "status",
-        },
+        { name: "name", status: "status", created_at: "created_at", updated_at: "updated_at" },
         {
           description: "Sort field. Options: name, status, created_at, updated_at",
         },
       ),
     ),
     order: t.Optional(
-      t.Enum(
-        {
-          asc: "ASC",
-          desc: "DESC",
-        },
-        {
-          description: "Sorting order. Options: ASC, DESC",
-        },
-      ),
+      t.Enum(Order, {
+        description: "Sorting order. Options: ASC, DESC",
+      }),
     ),
     page: t.Optional(
       t.Integer({
@@ -42,9 +54,7 @@ export const GetManyListsDTO = t.Optional(
       }),
     ),
     per_page: t.Optional(
-      t.Integer({
-        description: "Results per page. Set to 'all' to return all results",
-      }),
+      PerPageDTO,
     ),
   }),
 );
@@ -53,22 +63,19 @@ export const CreateListDTO = t.Object({
   name: t.String({
     description: "Name of the new list",
     error: "Please Provide List Name",
+    minLength: 1,
+    maxLength: 255,
   }),
-  is_private: t.Boolean({
+  type: t.Enum(ListType, {
     description: "Type of list. Options: private, public",
     error: "Please Provide List Type",
   }),
-  optin_mode: t.Enum(
-    {
-      single: "single",
-      double: "double",
-    },
-    {
-      description: "Opt-in type. Options: single, double",
-      error: "Please Provide Opt-in Type",
-    },
-  ),
-  is_active: t.Optional(t.Boolean({ description: "Active or Archive" })),
+  optin: t.Enum(ListOptin, {
+    description: "Opt-in mode. Options: single, double",
+    error: "Please Provide Opt-in Type",
+  }),
+  status: t.Optional(t.Enum(ListStatus, { description: "Active or Archive" })),
+  tags: t.Optional(t.Array(t.String())),
   description: t.Optional(
     t.String({
       description: "Description of the new list",
@@ -80,25 +87,21 @@ export const UpdateListDTO = t.Object({
   name: t.Optional(
     t.String({
       description: "New name for the list",
+      minLength: 1,
+      maxLength: 255,
     }),
   ),
   type: t.Optional(
-    t.Boolean({
+    t.Enum(ListType, {
       description: "Type of list. Options: private, public",
     }),
   ),
-  optin_mode: t.Optional(
-    t.Enum(
-      {
-        single: "single",
-        double: "double",
-      },
-      {
-        description: "Opt-in type. Options: single, double",
-      },
-    ),
+  optin: t.Optional(
+    t.Enum(ListOptin, {
+      description: "Opt-in type. Options: single, double",
+    }),
   ),
-  is_active: t.Optional(t.Boolean({ description: "Active or Archive" })),
+  status: t.Optional(t.Enum(ListStatus, { description: "Active or Archive" })),
   description: t.Optional(
     t.String({
       description: "Description of the list",
@@ -107,10 +110,37 @@ export const UpdateListDTO = t.Object({
 });
 
 export const DeleteManyListsDTO = t.Object({
-  list_ids: t.Array(
-    t.String({
+  ids: t.Array(
+    t.Number({
       description: "One or more list IDs to delete",
       error: "Please Provide List IDs",
+    }),
+  ),
+  list_ids: t.Optional(
+    t.Array(
+      t.Number({
+        description: "One or more list IDs to delete",
+      }),
+    ),
+  ),
+});
+
+export const DeleteManyListsQueryDTO = t.Object({
+  id: t.Optional(
+    t.Union([
+      t.Integer({
+        description: "One or more list IDs to delete",
+      }),
+      t.Array(
+        t.Integer({
+          description: "One or more list IDs to delete",
+        }),
+      ),
+    ]),
+  ),
+  query: t.Optional(
+    t.String({
+      description: "Search query to filter lists for deletion",
     }),
   ),
 });

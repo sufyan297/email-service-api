@@ -7,47 +7,108 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  Generated,
 } from "typeorm";
 import Template from "./Template";
-import SMTP from "./SMTP";
 import CampaignList from "./CampaignList";
-import DeliveryLog from "./DeliveryLog";
-import MailQueue from "./MailQueue";
+import { CampaignContentType, CampaignStatus, CampaignType } from "../types/constants";
+import SMTPConfig from "./SMTPConfig";
 
 @Entity("campaigns")
 export default class Campaign {
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
+  @PrimaryGeneratedColumn("increment")
+  id: number;
+
+  @Generated("uuid")
+  @Column("char", { length: 36, unique: true })
+  uuid: string;
 
   @Column("varchar")
-  name?: string;
+  name: string;
 
   @Column("varchar")
-  subject?: string;
+  subject: string;
+
+  @Column("varchar")
+  from_email: string;
 
   @Column("text")
-  body?: string;
+  body: string;
 
-  @Column("datetime")
+  @Column("text", { nullable: true })
+  body_source?: string;
+
+  @Column("text", { nullable: true })
+  altbody?: string;
+
+  @Column("enum", { enum: CampaignContentType })
+  content_type: CampaignContentType;
+
+  @Column("enum", { enum: CampaignType })
+  type: CampaignType;
+
+  @Column("enum", { enum: CampaignStatus })
+  status: CampaignStatus;
+
+  @Column("datetime", { nullable: true })
   send_at?: Date;
 
-  @Column("varchar")
-  status: string;
+  @Column("datetime", { nullable: true })
+  started_at?: Date;
 
-  @Column("char")
-  template_id: string;
+  @Column("json")
+  headers: Record<string, string>[];
 
-  @Column("char")
-  smtp_id: string;
+  @Column("json")
+  attribs: Record<string, unknown>;
+
+  @Column("json", { nullable: true })
+  tags: string[];
+
+  @Column({ default: 0 })
+  views: number;
+
+  @Column({ default: 0 })
+  clicks: number;
+
+  @Column({ default: 0 })
+  bounces: number;
+
+  @Column({ default: 0 })
+  to_send: number;
+
+  @Column({ default: 0 })
+  sent: number;
+
+  @Column({ default: 0 })
+  max_subscriber_id: number;
+
+  @Column({ default: 0 })
+  last_subscriber_id: number;
+
+  @Column({ default: false })
+  archive: boolean;
+
+  @Column("text", { nullable: true })
+  archive_slug?: string;
+
+  @Column("json")
+  archive_meta: Record<string, unknown>;
+
+  @Column("text", { nullable: true })
+  traversal_attribute?: string;
+
+  @Column({ nullable: true })
+  template_id: number;
 
   @Column()
-  is_active: boolean;
+  smtp_config_id: number;
 
-  @Column()
+  @Column({ nullable: true })
+  archive_template_id?: number;
+
+  @Column({ default: false })
   is_deleted: boolean;
-
-  @Column("char")
-  traversal_attribute: string;
 
   @Column("datetime")
   @CreateDateColumn()
@@ -57,23 +118,18 @@ export default class Campaign {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @Column("datetime")
-  deleted_at: Date;
-
   @ManyToOne(() => Template)
   @JoinColumn({ name: "template_id", referencedColumnName: "id" })
   template?: Template;
 
-  @ManyToOne(() => SMTP)
-  @JoinColumn({ name: "smtp_id", referencedColumnName: "id" })
-  smtp?: SMTP;
+  @ManyToOne(() => Template)
+  @JoinColumn({ name: "archive_template_id", referencedColumnName: "id" })
+  archiveTemplate?: Template;
+
+  @ManyToOne(() => SMTPConfig)
+  @JoinColumn({ name: "smtp_config_id", referencedColumnName: "id" })
+  smtpConfig: SMTPConfig;
 
   @OneToMany(() => CampaignList, (campaignList) => campaignList.campaign)
   campaignLists: CampaignList[];
-
-  @OneToMany(() => DeliveryLog, (deliveryLog) => deliveryLog.campaign)
-  deliveryLogs: DeliveryLog[];
-
-  @OneToMany(() => MailQueue, (mailQueue) => mailQueue.campaign)
-  mailQueues: MailQueue[];
 }

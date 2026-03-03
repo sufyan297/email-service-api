@@ -4,26 +4,38 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  Generated,
 } from "typeorm";
+import { TemplateType } from "../types/constants";
 
 @Entity("templates")
 export default class Template {
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
+  @PrimaryGeneratedColumn("increment")
+  id: number;
 
-  @Column({ type: "varchar", length: 255 })
+  @Generated("uuid")
+  @Column("char", { length: 36, unique: true })
+  uuid: string;
+
+  @Column("varchar")
   name: string;
 
-  @Column({ type: "varchar", length: 255, nullable: true })
+  @Column("enum", { enum: TemplateType })
+  type: TemplateType;
+
+  @Column("varchar", { nullable: true })
   subject?: string;
 
-  @Column({ type: "text", nullable: true })
-  body?: string;
+  @Column("text")
+  body: string;
 
-  @Column()
-  is_active: boolean;
+  @Column("text", { nullable: true })
+  body_source?: string;
 
-  @Column()
+  @Column({ default: false })
+  is_default: boolean;
+
+  @Column({ default: false })
   is_deleted: boolean;
 
   @Column("datetime")
@@ -33,7 +45,4 @@ export default class Template {
   @Column("datetime")
   @UpdateDateColumn()
   updated_at: Date;
-
-  @Column("datetime")
-  deleted_at: Date;
 }

@@ -2,31 +2,35 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import List from "./List";
 import Subscriber from "./Subscriber";
+import { SubscriptionStatus } from "../types/constants";
 
 @Entity({ name: "subscriber_lists" })
+@Index(["subscriber_id", "list_id"], { unique: true })
 export default class SubscriberList {
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
-
-  @Column("char", { length: 36 })
-  subscriber_id: string;
-
-  @Column("char", { length: 36 })
-  list_id: string;
-
-  @Column("varchar")
-  is_subscribed: string;
+  @PrimaryGeneratedColumn("increment")
+  id: number;
 
   @Column()
-  is_active: boolean;
+  subscriber_id: number;
 
   @Column()
+  list_id: number;
+
+  @Column("enum", { enum: SubscriptionStatus })
+  status: SubscriptionStatus;
+
+  @Column("json")
+  meta: Record<string, unknown>;
+
+  @Column({ default: false })
   is_deleted: boolean;
 
   @Column("datetime")
@@ -37,12 +41,11 @@ export default class SubscriberList {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @Column("datetime")
-  deleted_at: Date;
-
   @ManyToOne(() => Subscriber, (subscriber) => subscriber.subscriberLists, { lazy: true })
+  @JoinColumn({ name: "subscriber_id", referencedColumnName: "id" })
   subscriber: Promise<Subscriber>;
 
   @ManyToOne(() => List, (list) => list.subscriberLists, { lazy: true })
+  @JoinColumn({ name: "list_id", referencedColumnName: "id" })
   list: Promise<List>;
 }

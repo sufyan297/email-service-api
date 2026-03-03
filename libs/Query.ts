@@ -81,17 +81,32 @@ const _getMany = <T extends ObjectLiteral>(
   return new Promise(async (resolve, reject) => {
     try {
       const repository = AppDataSource.getRepository(modelName);
+      const includeDeleted = options?.withDeleted === true;
       if (options && options.where) {
-        options.where = _getWhere({
-          ...options.where,
-          ...(options.withDeleted == false || options.withDeleted == undefined
-            ? { is_deleted: false }
-            : {}),
-        });
-      } else {
-        options = {};
+        let newWhere = options.where as any;
+        if (Array.isArray(newWhere)) {
+          newWhere = newWhere.map((itm: any) => {
+            if (!includeDeleted && itm?.is_deleted === undefined) {
+              itm.is_deleted = false;
+            }
+            return itm;
+          });
+          options.where = _getWhere(newWhere);
+        } else {
+          options.where = _getWhere({
+            ...newWhere,
+            ...(!includeDeleted && newWhere?.is_deleted === undefined ? { is_deleted: false } : {}),
+          });
+        }
+      } else if (options) {
         options.where = {
-          // ...options.withDeleted == false || options.withDeleted == undefined ? { is_deleted: false } : {}
+          ...(includeDeleted ? {} : { is_deleted: false }),
+        };
+      } else {
+        options = {
+          where: {
+            is_deleted: false,
+          },
         };
       }
       const data = await repository.find({ ...options, take: options.limit, skip: options.skip });
@@ -115,23 +130,29 @@ const _getCount = <T extends ObjectLiteral>(
     try {
       if (!modelName) return resolve(0);
       const repository = AppDataSource.getRepository(modelName);
+      const includeDeleted = options?.withDeleted === true;
       if (options && options.where) {
         let newWhere = options.where;
         if (Array.isArray(options.where)) {
           //@ts-ignore
           options.where = newWhere.map((itm: any) => {
-            itm.is_deleted = itm.is_deleted != undefined ? itm.is_deleted : false;
+            if (!includeDeleted && itm.is_deleted == undefined) {
+              itm.is_deleted = false;
+            }
             return _getWhere(itm);
           });
         } else {
-          options.where = _getWhere(options.where);
+          options.where = _getWhere({
+            ...newWhere,
+            ...(!includeDeleted && (newWhere as any)?.is_deleted === undefined
+              ? { is_deleted: false }
+              : {}),
+          });
         }
       } else {
-        options = {};
+        options = options || {};
         options.where = {
-          ...(options.withDeleted == false || options.withDeleted == undefined
-            ? { is_deleted: false }
-            : {}),
+          ...(includeDeleted ? {} : { is_deleted: false }),
         };
       }
       const data = await repository.count(options);
@@ -162,21 +183,27 @@ const _getPagination = <T extends ObjectLiteral>(
       //===================
 
       const repository = AppDataSource.getRepository(modelName);
+      const includeDeleted = options?.withDeleted === true;
       if (options && options.where) {
         let newWhere = options.where;
         if (Array.isArray(options.where)) {
           newWhere.map((itm: any) => {
-            if (options.withDeleted == false || options.withDeleted == undefined) {
+            if (!includeDeleted && itm.is_deleted == undefined) {
               itm.is_deleted = false;
             }
           });
+          options.where = _getWhere(newWhere);
+        } else {
+          options.where = _getWhere({
+            ...newWhere,
+            ...(!includeDeleted && (newWhere as any)?.is_deleted === undefined
+              ? { is_deleted: false }
+              : {}),
+          });
         }
-        options.where = _getWhere(newWhere);
       } else {
         options.where = {
-          ...(options.withDeleted == false || options.withDeleted == undefined
-            ? { is_deleted: false }
-            : {}),
+          ...(includeDeleted ? {} : { is_deleted: false }),
         };
       }
       //@ts-ignore

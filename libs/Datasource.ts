@@ -1,14 +1,22 @@
 import { DataSource as TypeORMDataSource } from "typeorm";
-import Admin from "../src/models/Admin";
 import Campaign from "../src/models/Campaign";
 import CampaignList from "../src/models/CampaignList";
-import DeliveryLog from "../src/models/DeliveryLog";
+import CampaignMedia from "../src/models/CampaignMedia";
+import CampaignView from "../src/models/CampaignView";
 import List from "../src/models/List";
-import MailQueue from "../src/models/MailQueue";
-import SMTP from "../src/models/SMTP";
 import Subscriber from "../src/models/Subscriber";
-import SubscriberList from "../src/models/SubscribersList";
+import SubscriberList from "../src/models/SubscriberList";
 import Template from "../src/models/Template";
+import Bounce from "../src/models/Bounce";
+import Media from "../src/models/Media";
+import Link from "../src/models/Link";
+import LinkClick from "../src/models/LinkClick";
+import SMTPConfig from "../src/models/SMTPConfig";
+import Setting from "../src/models/Setting";
+import ImportJob from "../src/models/ImportJob";
+import ImportLog from "../src/models/ImportLog";
+import User from "../src/models/User";
+import Session from "../src/models/Session";
 
 export const AppDataSource = new TypeORMDataSource({
   type: "mysql",
@@ -20,16 +28,24 @@ export const AppDataSource = new TypeORMDataSource({
   logging: true,
   synchronize: true,
   entities: [
-    Admin,
+    Bounce,
     Campaign,
     CampaignList,
-    DeliveryLog,
+    CampaignMedia,
+    CampaignView,
+    ImportJob,
+    ImportLog,
+    Link,
+    LinkClick,
     List,
-    MailQueue,
-    SMTP,
+    Media,
+    Session,
+    Setting,
+    SMTPConfig,
     Subscriber,
     SubscriberList,
     Template,
+    User,
   ],
 });
 

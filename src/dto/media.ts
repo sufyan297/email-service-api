@@ -1,14 +1,21 @@
 import { t } from "elysia";
 
 export const GetMediaDTO = t.Object({
-  page: t.Integer({
-    description: "Page number for paginated results",
-    optional: true,
-  }),
-  per_page: t.Integer({
-    description: "Results per page",
-    optional: true,
-  }),
+  query: t.Optional(
+    t.String({
+      description: "Filter media by filename substring",
+    }),
+  ),
+  page: t.Optional(
+    t.Integer({
+      description: "Page number for paginated results",
+    }),
+  ),
+  per_page: t.Optional(
+    t.Union([t.Integer({ minimum: 1 }), t.Literal("all")], {
+      description: "Results per page",
+    }),
+  ),
 });
 
 export const GetSpecificMediaDTO = t.Object({

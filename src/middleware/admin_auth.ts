@@ -1,6 +1,7 @@
 import { UnAuthorizedAccessException } from "../../libs/Errors";
 import { getOne } from "../../libs/Query";
-import Admin from "../models/Admin";
+import User from "../models/User";
+import { UserStatus } from "../types/constants";
 
 export default async ({ bearer, jwt, set }: any) => {
   try {
@@ -13,16 +14,16 @@ export default async ({ bearer, jwt, set }: any) => {
 
     if (!sub) throw new UnAuthorizedAccessException("Invalid Token");
 
-    let admin = await getOne<Admin>("Admin", {
+    const user = await getOne<User>("User", {
       where: {
         id: sub,
-        is_active: true,
+        status: UserStatus.enabled,
       },
     });
 
-    if (!admin) throw new UnAuthorizedAccessException("Cannot Verify Session");
+    if (!user) throw new UnAuthorizedAccessException("Cannot Verify Session");
 
-    set.user = admin;
+    set.user = user;
   } catch (error) {
     console.error(error);
     throw error;

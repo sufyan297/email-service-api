@@ -1,78 +1,83 @@
 import { t } from "elysia";
+import { ListAction, Order, SubscriberStatus, SubscriptionStatus } from "../types/constants";
+
+const PerPageDTO = t.Union([t.Integer({ minimum: 1 }), t.Literal("all")]);
 
 export const GetManySubcribersDTO = t.Optional(
   t.Object({
+    query: t.Optional(
+      t.String({
+        description: "Subscriber search by SQL expression",
+      }),
+    ),
+    list_id: t.Optional(
+      t.Union([
+        t.Integer({
+          description: "ID of a list to filter by",
+        }),
+        t.Array(
+          t.Integer({
+            description: "ID of lists to filter by. Repeat in the query for multiple values",
+          }),
+        ),
+      ]),
+    ),
     list_ids: t.Optional(
       t.Array(
-        t.String({
+        t.Integer({
           description: "ID of lists to filter by. Repeat in the query for multiple values",
-          error: "Please Provide List Id",
         }),
       ),
     ),
     subscription_status: t.Optional(
-      t.Boolean({
+      t.Enum(SubscriptionStatus, {
         description: "Subscription status to filter by if there are one or more list_ids",
-        error: "Please Provide Subscription Status",
       }),
     ),
     order_by: t.Optional(
       t.Enum(
-        {
-          createdAt: "created_at",
-          updatedAt: "updated_at",
-        },
+        { name: "name", status: "status", created_at: "created_at", updated_at: "updated_at" },
         {
           description: "Result sorting field. Options: name, status, created_at, updated_at",
-          error: "Please Provide Order By",
         },
       ),
     ),
     order: t.Optional(
-      t.Enum(
-        {
-          ASC: "ASC",
-          DESC: "DESC",
-        },
-        {
-          description: "Sorting order: ASC for ascending, DESC for descending",
-          error: "Please Provide Order",
-        },
-      ),
+      t.Enum(Order, {
+        description: "Sorting order: ASC for ascending, DESC for descending",
+      }),
     ),
     page: t.Optional(
       t.Integer({
         description: "Page number for paginated results",
-        error: "Please Provide Page Number",
       }),
     ),
     per_page: t.Optional(
-      t.Integer({
-        description: "Results per page. Set as 'all' for all results",
-        error: "Please Provide Per Page",
-      }),
+      PerPageDTO,
     ),
   }),
 );
-
-export const SubscriberBounceRecordsDTO = t.Object({
-  subscriber_id: t.String({
-    description: "Subscriber's ID",
-    error: "Please Provide Subscriber ID",
-  }),
-});
 
 export const CreateSubscriberDTO = t.Object({
   name: t.String({
     description: "Subscriber's name",
     error: "Please Provide Name",
+    minLength: 1,
+    maxLength: 255,
   }),
   email: t.String({
     description: "Subscriber's email address",
     error: "Please Provide Email",
   }),
-  attributes: t.Optional(
-    t.Any({
+  status: t.Enum(
+    {
+      enabled: "enabled",
+      blocklisted: "blocklisted",
+    },
+    { description: "Subscriber status", error: "Please Provide Subscriber Status" },
+  ),
+  attribs: t.Optional(
+    t.Record(t.String(), t.Unknown(), {
       description:
         'Optional JSON object attributes for the subscriber (e.g. {"location":"Somewhere"})',
     }),
@@ -81,39 +86,50 @@ export const CreateSubscriberDTO = t.Object({
     t.Array(
       t.Integer({
         description: "List of list IDs to subscribe to",
-        error: "Please Provide List IDs",
       }),
     ),
+  ),
+  list_ids: t.Optional(
+    t.Array(
+      t.Integer({
+        description: "List of list IDs to subscribe to",
+      }),
+    ),
+  ),
+  preconfirm_subscriptions: t.Optional(
+    t.Boolean({ description: "Preconfirmation of subscriptions" }),
   ),
 });
 
 export const ModifySubscriberListDTO = t.Object({
-  subscriber_ids: t.Array(
-    t.String({
+  ids: t.Array(
+    t.Integer({
       description: "Array of user IDs to be modified",
       error: "Please Provide IDs",
     }),
   ),
-  action: t.Enum(
-    {
-      add: "add",
-      remove: "remove",
-      unsubscribe: "unsubscribe",
-    },
-    {
-      description: "Action to be applied: add, remove, or unsubscribe",
-      error: "Please Provide Action",
-    },
+  subscriber_ids: t.Optional(
+    t.Array(
+      t.Integer({
+        description: "Array of user IDs to be modified",
+      }),
+    ),
   ),
+  action: t.Enum(ListAction, {
+    description: "Action to be applied: add, remove, or unsubscribe",
+    error: "Please Provide Action",
+  }),
   target_list_ids: t.Array(
-    t.String({
+    t.Integer({
       description: "Array of list IDs to be modified",
       error: "Please Provide Target List IDs",
     }),
   ),
-  subscription_status: t.Boolean({
-    description: "Subscriber status for add: confirmed, unconfirmed, or unsubscribed",
-  }),
+  status: t.Optional(
+    t.Enum(SubscriptionStatus, {
+      description: "Subscriber status for add: confirmed, unconfirmed, or unsubscribed",
+    }),
+  ),
 });
 
 export const UpdateSubscriberDTO = t.Object({
@@ -125,46 +141,92 @@ export const UpdateSubscriberDTO = t.Object({
   name: t.Optional(
     t.String({
       description: "Subscriber's name",
+      minLength: 1,
+      maxLength: 255,
     }),
   ),
   status: t.Optional(
-    t.String({
-      description: "Subscriber's status: enabled, blocklisted",
+    t.Enum(SubscriberStatus, {
+      description: "Subscriber's status",
     }),
   ),
-  list_ids: t.Optional(
+  lists: t.Optional(
     t.Array(
-      t.String({
+      t.Integer({
         description: "List of list IDs to subscribe to",
       }),
     ),
   ),
-  attributes: t.Optional(
-    t.Any({
-      description: "Optional JSON object attributes for the subscriber",
+  list_ids: t.Optional(
+    t.Array(
+      t.Integer({
+        description: "List of list IDs to subscribe to",
+      }),
+    ),
+  ),
+  attribs: t.Optional(
+    t.Record(t.String(), t.Unknown(), {
+      description:
+        'Optional JSON object attributes for the subscriber (e.g. {"location":"Somewhere"})',
     }),
   ),
-  is_active: t.Optional(
-    t.Boolean({
-      description: "Subscriber's active status",
-    }),
+  preconfirm_subscriptions: t.Optional(
+    t.Boolean({ description: "Preconfirmation of subscriptions" }),
   ),
 });
 
 export const BlocklistManySubscribersDTO = t.Object({
-  subscriber_ids: t.Array(
-    t.String({
+  ids: t.Array(
+    t.Number({
       description: "Array of subscriber IDs to blocklist",
       error: "Please Provide IDs",
     }),
+    { minItems: 1 },
+  ),
+  subscriber_ids: t.Optional(
+    t.Array(
+      t.Number({
+        description: "Array of subscriber IDs to blocklist",
+      }),
+      { minItems: 1 },
+    ),
   ),
 });
 
 export const DeleteManySubscribersDTO = t.Object({
-  subscriber_ids: t.Array(
-    t.String({
+  ids: t.Array(
+    t.Integer({
       description: "Array of subscriber IDs to delete",
       error: "Please Provide Subscriber IDs",
+    }),
+    { minItems: 1 },
+  ),
+  subscriber_ids: t.Optional(
+    t.Array(
+      t.Integer({
+        description: "Array of subscriber IDs to delete",
+      }),
+      { minItems: 1 },
+    ),
+  ),
+});
+
+export const SubscriberQueryActionDTO = t.Object({
+  query: t.Optional(
+    t.String({
+      description: "SQL expression to filter subscribers with",
+    }),
+  ),
+  list_ids: t.Optional(
+    t.Array(
+      t.Integer({
+        description: "Optional list IDs to limit filtering",
+      }),
+    ),
+  ),
+  all: t.Optional(
+    t.Boolean({
+      description: "If true, ignores query and applies operation to all subscribers",
     }),
   ),
 });

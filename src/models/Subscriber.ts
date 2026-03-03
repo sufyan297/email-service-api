@@ -5,27 +5,32 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  Generated,
 } from "typeorm";
-import SubscriberList from "./SubscribersList";
-import DeliveryLog from "./DeliveryLog";
-import MailQueue from "./MailQueue";
+import SubscriberList from "./SubscriberList";
+import { SubscriberStatus } from "../types/constants";
+import Bounce from "./Bounce";
 
 @Entity({ name: "subscribers" })
 export default class Subscriber {
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
+  @PrimaryGeneratedColumn("increment")
+  id: number;
 
-  @Column("varchar")
+  @Generated("uuid")
+  @Column("char", { length: 36, unique: true })
+  uuid: string;
+
+  @Column("varchar", { unique: true })
   email: string;
 
   @Column("varchar")
   name: string;
 
-  @Column("json", { nullable: true })
-  attributes?: Record<string, any>;
+  @Column("enum", { enum: SubscriberStatus })
+  status: SubscriberStatus;
 
-  @Column({ default: true })
-  is_active: boolean;
+  @Column("json", { nullable: true })
+  attribs?: Record<string, unknown>;
 
   @Column({ default: false })
   is_deleted: boolean;
@@ -38,15 +43,9 @@ export default class Subscriber {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @Column("datetime", { nullable: true })
-  deleted_at: Date;
-
   @OneToMany(() => SubscriberList, (subscriberList) => subscriberList.subscriber)
   subscriberLists: SubscriberList[];
 
-  @OneToMany(() => DeliveryLog, (deliveryLog) => deliveryLog.subscriber)
-  deliveryLogs: DeliveryLog[];
-
-  @OneToMany(() => MailQueue, (mailQueue) => mailQueue.subscriber)
-  mailQueues: MailQueue[];
+  @OneToMany(() => Bounce, (bounce) => bounce.subscriber)
+  bounces: Bounce[];
 }
