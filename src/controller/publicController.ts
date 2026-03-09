@@ -5,6 +5,7 @@ import {
   GetPublicCampaignArchives,
   GetPublicLists,
   PublicSubscription,
+  TrackLinkClick,
 } from "../services/publicService";
 
 export const PublicController = (app: AppInstance) => {
@@ -24,7 +25,8 @@ export const PublicController = (app: AppInstance) => {
         async ({ body }) => {
           return await PublicSubscription({
             ...body,
-            list_uuids: body.list_uuids || (Array.isArray(body.l) ? body.l : body.l ? [body.l] : []),
+            list_uuids:
+              body.list_uuids || (Array.isArray(body.l) ? body.l : body.l ? [body.l] : []),
           });
         },
         {
@@ -48,6 +50,16 @@ export const PublicController = (app: AppInstance) => {
         },
         {
           detail: { tags: ["Public"], description: "Get public archives" },
+        },
+      )
+      .get(
+        "/link-click/:uuid",
+        async ({ params }) => {
+          const { url } = await TrackLinkClick(params.uuid);
+          return Response.redirect(url, 302);
+        },
+        {
+          detail: { tags: ["Public"], description: "Track link click and redirect" },
         },
       ),
   );

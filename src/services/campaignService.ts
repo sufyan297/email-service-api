@@ -6,6 +6,10 @@ import Campaign from "../models/Campaign";
 import SMTPConfig from "../models/SMTPConfig";
 import { GetManyCampaignsOptions } from "../types";
 import { CampaignStatus, CampaignType, Order } from "../types/constants";
+import {
+  ExtractAndStoreLinksForCampaign,
+  ReplaceUrlsWithTrackingLinks,
+} from "./linkService";
 
 const normalizeIds = (ids?: number[]): number[] => {
   if (!ids) {
@@ -76,7 +80,13 @@ const GetManyCampaigns = async ({
   order_by = "created_at",
   order = Order.desc,
 }: GetManyCampaignsOptions): Promise<
-  APIResponse<{ results: Campaign[]; query: string; total: number; per_page: number | "all"; page: number }>
+  APIResponse<{
+    results: Campaign[];
+    query: string;
+    total: number;
+    per_page: number | "all";
+    page: number;
+  }>
 > => {
   const limit = per_page === "all" ? undefined : per_page;
   const statuses = Array.isArray(status) ? status : status ? [status] : [];
@@ -179,6 +189,11 @@ const CreateCampaign = async (
 
   await syncCampaignLists(newCampaign.id, body.list_ids);
 
+  // Extract and store links from campaign body
+  if (body.body) {
+    await ExtractAndStoreLinksForCampaign(newCampaign.id, body.body);
+  }
+
   return {
     data: newCampaign,
     message: "Campaign Created Successfully",
@@ -194,6 +209,11 @@ const UpdateCampaign = async (
   })) as Campaign;
 
   await syncCampaignLists(body.id, body.list_ids);
+
+  // If body was updated, re-extract links
+  if (body.body) {
+    await ExtractAndStoreLinksForCampaign(body.id, body.body);
+  }
 
   const campaign = (await getOne("Campaign", {
     where: { id: updatedCampaign.id },
@@ -303,7 +323,12 @@ const UpdateCampaignStatus = async (
 
 const UpdateCampaignArchive = async (
   campaignId: number,
-  body: { archive: boolean; archive_template_id?: number; archive_meta?: any; archive_slug?: string },
+  body: {
+    archive: boolean;
+    archive_template_id?: number;
+    archive_meta?: any;
+    archive_slug?: string;
+  },
 ): Promise<APIResponse<Campaign>> => {
   const updatedCampaign = (await saveData("Campaign", {
     id: campaignId,
@@ -321,7 +346,9 @@ const UpdateCampaignArchive = async (
   };
 };
 
-const GetRunningCampaignStats = async (campaignIds?: number[]): Promise<APIResponse<Campaign[]>> => {
+const GetRunningCampaignStats = async (
+  campaignIds?: number[],
+): Promise<APIResponse<Campaign[]>> => {
   const ids = normalizeIds(campaignIds);
   const campaigns = (await getMany("Campaign", {
     where: {
@@ -476,13 +503,19 @@ const TestCampaign = async ({
     name: smtp.hello_hostname,
   });
 
+  // Get base URL from environment or use default
+  const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
+
+  // Replace URLs with tracking links
+  const emailBody = await ReplaceUrlsWithTrackingLinks(campaignId, campaign.body, baseUrl);
+
   await Promise.all(
     subscriber_emails.map(async (email) => {
       await transport.sendMail({
         from: campaign.from_email || smtp.username,
         to: email,
         subject: campaign.subject,
-        html: campaign.body,
+        html: emailBody,
       });
     }),
   );

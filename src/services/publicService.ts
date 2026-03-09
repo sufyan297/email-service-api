@@ -1,9 +1,11 @@
-import { getMany, saveData } from "../../libs/Query";
+import { getMany, getOne, rawQuery, saveData } from "../../libs/Query";
 import { APIResponse } from "../GlobalResponseHandler";
 import Campaign from "../models/Campaign";
 import List from "../models/List";
 import Subscriber from "../models/Subscriber";
+import Link from "../models/Link";
 import { ListStatus, ListType, SubscriptionStatus, SubscriberStatus } from "../types/constants";
+import { AppError } from "../../libs/Errors";
 
 const omitId = <T extends { id?: unknown }>(item: T): Omit<T, "id"> => {
   const { id: _id, ...rest } = item as any;
@@ -94,4 +96,29 @@ export const GetPublicCampaignArchives = async (): Promise<
     message: "Public Archives Retrieved Successfully",
     success: true,
   };
+};
+
+export const TrackLinkClick = async (linkUuid: string): Promise<{ url: string }> => {
+  const link = (await getOne("Link", {
+    where: { uuid: linkUuid, is_deleted: false },
+  })) as Link | null;
+
+  if (!link) {
+    throw new AppError("Link not found", 404);
+  }
+
+  // Record the click
+  await saveData("LinkClick", {
+    link_id: link.id,
+    campaign_id: link.campaign_id ?? null,
+  });
+
+  // Increment campaign clicks counter (atomic)
+  if (link.campaign_id) {
+    await rawQuery(
+      `UPDATE campaigns SET clicks = clicks + 1 WHERE id = ${Number(link.campaign_id)} AND is_deleted = false`,
+    );
+  }
+
+  return { url: link.url };
 };
